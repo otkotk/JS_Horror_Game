@@ -146,7 +146,6 @@ console.log(win); // ウィンドウオブジェクト
 
 let virus_count = 0;
 function virusCommando(oops){
-  //相対パスが使えないので、noroi_urlを環境に合わせて変えてください。
   if(oops === 666){
     window.open(noroi_url + '/gameClear.html');
   }else{
