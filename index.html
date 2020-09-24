@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>テンプレート</title>
+  <link href="_common/images/favicon.ico" rel="shortcut icon">
+  <link href="https://fonts.googleapis.com/css?family=M+PLUS+1p:400,500" rel="stylesheet">
+  <link href="_common/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <h1 class="title">タイトル</h1>
+      <h2 class="title">サブタイトル</h2>
+    </div><!-- /.container -->
+  </header>
+  <main>
+    <div class="container">
+        <img src="_common/images/nekoneko.jpg" id="nekoneko" style="width: 300px; float: right; opacity: 0.0; margin-top:200px;">
+      <section class="game_area">
+        <p id="omikuzi" style="font-size: 150%;">ついでにおみくじ(^^)</p>
+      </section>
+      <section class="game_area">
+        <button class="janken_button" value="0">グー</button>
+        <button class="janken_button" value="1" style="margin-left: 10px;">チョキ</button>
+        <button class="janken_button" value="2" style="margin-left: 10px;">パー</button>
+        <canvas id="virus_button" style="display: none; margin-top:50px; margin-left: 75px; font-size: 500%; font-weight: 1000; width: 1000px; height: 500px; position: absolute; top: 62px; left: 132px; background-color: red;">ウイルス発生！！</canvas>
+        <p>５連勝すると、右にムフフな画像が出るゾ！！→</p>
+      </section>
+      <section class="game_area" style="margin-top: 20px;">
+          <textarea name="janken_log" id="janken_log" cols="50" rows="30">ここにログが残ります。</textarea>
+      </section>
+    </div><!-- /.container -->
+  </main>
+  <footer style="margin-top: 100px">
+    <div class="container">
+      <p>JavaScript Samples</p>
+    </div><!-- /.container -->
+  </footer>
+  <script src="playGame.js"></script>
+  <script src="anime.js"></script>
+</body>
+
+<script>
+  var canvas = document.getElementById('virus_button'),
+      ctx = canvas.getContext('2d'),
+      w = ctx.canvas.width,
+      h = ctx.canvas.height,
+
+      // noise関係
+      rgb = {
+          // ノイズの点に使う色を設定（↓はセピア色）
+          r: 107,
+          g: 74,
+          b: 43
+      },
+      idata = ctx.createImageData(w, h),
+      data = idata.data,
+      dotAlpha = 100, // max256（数値が大きいほどノイズが強くなる=点の不透明度が下がる）
+
+      // 円形グラデーション関係
+      x = w / 2,
+      y = h / 2,
+      radius = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)) | 0, // canvasの外接円の半径
+      grad = ctx.createRadialGradient(x, y, 0, x, y, radius),
+      blend = 'screen';  // ブレンドモードを定義
+
+  var draw = {
+      // canvas全体にnoise（1pxごとにランダムな不透明度を持つ点）を作成
+      noise: function () {
+          for (var i = 0, l = data.length; i < l; i += 4) {
+              data[i + 0] = rgb.r;
+              data[i + 1] = rgb.g;
+              data[i + 2] = rgb.b;
+              data[i + 3] = Math.random() * dotAlpha | 0;
+          }
+          ctx.putImageData(idata, 0, 0);
+      },
+      // Gradation領域の作成
+      grad: function () {
+          grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
+          grad.addColorStop(0, 'rgba(0,0,0,0)');
+          grad.addColorStop(1, 'rgba(0,0,0,1)');
+      },
+      // ループさせたい描画
+      render: function () {
+          ctx.clearRect(0, 0, w, h);
+          this.noise();
+
+          // 円形グラデーションの描画
+          ctx.beginPath();
+          ctx.fillStyle = grad;
+          ctx.rect(0, 0, w, h);
+          ctx.fill();
+          requestAnimationFrame(this.render.bind(this));
+      },
+      initialize: function () {
+          ctx.globalCompositeOperation = blend;  // canvasのブレンドモードを定義
+          this.grad();
+          this.render();
+      }
+  }
+
+  draw.initialize();
+</script>
+</html>

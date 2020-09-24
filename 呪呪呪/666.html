@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>呪呪呪</title>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+</body>
+
+<script>
+    var canvas = document.getElementById('canvas'),
+        ctx = canvas.getContext('2d'),
+        w = ctx.canvas.width,
+        h = ctx.canvas.height,
+
+        // noise関係
+        rgb = {
+            // ノイズの点に使う色を設定（↓はセピア色）
+            r: 107,
+            g: 74,
+            b: 43
+        },
+        idata = ctx.createImageData(w, h),
+        data = idata.data,
+        dotAlpha = 100, // max256（数値が大きいほどノイズが強くなる=点の不透明度が下がる）
+
+        // 円形グラデーション関係
+        x = w / 2,
+        y = h / 2,
+        radius = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)) | 0, // canvasの外接円の半径
+        grad = ctx.createRadialGradient(x, y, 0, x, y, radius),
+        blend = 'screen';  // ブレンドモードを定義
+
+    var draw = {
+        // canvas全体にnoise（1pxごとにランダムな不透明度を持つ点）を作成
+        noise: function () {
+            for (var i = 0, l = data.length; i < l; i += 4) {
+                data[i + 0] = rgb.r;
+                data[i + 1] = rgb.g;
+                data[i + 2] = rgb.b;
+                data[i + 3] = Math.random() * dotAlpha | 0;
+            }
+            ctx.putImageData(idata, 0, 0);
+        },
+        // Gradation領域の作成
+        grad: function () {
+            grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
+            grad.addColorStop(0, 'rgba(0,0,0,0)');
+            grad.addColorStop(1, 'rgba(0,0,0,1)');
+        },
+        // ループさせたい描画
+        render: function () {
+            ctx.clearRect(0, 0, w, h);
+            this.noise();
+
+            // 円形グラデーションの描画
+            ctx.beginPath();
+            ctx.fillStyle = grad;
+            ctx.rect(0, 0, w, h);
+            ctx.fill();
+            requestAnimationFrame(this.render.bind(this));
+        },
+        initialize: function () {
+            ctx.globalCompositeOperation = blend;  // canvasのブレンドモードを定義
+            this.grad();
+            this.render();
+        }
+    }
+
+    draw.initialize();
+</script>
+
+<style>
+    canvas {
+        background-image: url('../_common/images/noroi2.jpg');
+        height: 700px;
+        background-position: 0 0;
+        background-size: cover;
+    }
+</style>
+
+</html>
